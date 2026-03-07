@@ -122,7 +122,7 @@ export default function LoginScreen() {
       if (!userId) throw new Error("Failed to retrieve User ID.");
 
       // 2. Insert into 'patients' table
-      const { error: dbError } = await supabase.from('patients').insert([{
+      const { error: dbError } = await supabase.from('patients').upsert([{
         id: userId,
         name: formData.name,
         phone: formData.phone,
