@@ -27,11 +27,11 @@ export default function App() {
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {session ? (
           // AUTHENTICATED AREA
-          <> 
+          <>
             {/* The first screen in the group is the default "landing" screen */}
             <Stack.Screen name="Home" component={HomeScreen} />
-            <Stack.Screen name="Booking" component={BookingScreen} /> 
-            <Stack.Screen name="MyAppointments" component={MyAppointmentsScreen} /> 
+            <Stack.Screen name="Booking" component={BookingScreen} />
+            <Stack.Screen name="MyAppointments" component={MyAppointmentsScreen} />
           </>
         ) : (
           // GUEST AREA
