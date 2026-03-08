@@ -3,7 +3,7 @@ import { supabase } from './supabaseClient';
 import {
   LayoutDashboard, Users, Stethoscope, CalendarCheck,
   CheckCircle, XCircle, Phone, ArrowLeft,
-  Clock, Calendar, ChevronRight, Lock
+  Clock, Calendar, ChevronRight, Lock, Droplet
 } from 'lucide-react';
 import './App.css';
 
@@ -15,6 +15,7 @@ export default function App() {
   // --- APP STATE ---
   const [activeTab, setActiveTab] = useState('appointments');
   const [appointments, setAppointments] = useState([]);
+  const [bloodDonations, setBloodDonations] = useState([]);
   const [patients, setPatients] = useState([]);
   const [doctors, setDoctors] = useState([]);
 
@@ -57,6 +58,13 @@ export default function App() {
 
       if (patError) console.error("Pat Error:", patError);
 
+      // Fetch Blood Donations
+      const { data: bloodData, error: bloodError } = await supabase
+        .from('blood_donations')
+        .select('*');
+
+      if (bloodError) console.error("Blood Error:", bloodError);
+
       // 4. Client-Side Join
       let fullAppointments = (appData || []).map(app => {
         const doc = (docData || []).find(d => d.id == app.doctor_id);
@@ -87,6 +95,16 @@ export default function App() {
       setDoctors(docData || []);
       setPatients(patData || []);
 
+      let fullBloodDonations = bloodData || [];
+      fullBloodDonations.sort((a, b) => {
+        if (a.status === 'pending' && b.status !== 'pending') return -1;
+        if (a.status !== 'pending' && b.status === 'pending') return 1;
+        if (a.last_donation_date < b.last_donation_date) return -1;
+        if (a.last_donation_date > b.last_donation_date) return 1;
+        return 0;
+      });
+      setBloodDonations(fullBloodDonations);
+
     } catch (e) {
       console.error("Error fetching data:", e);
     }
@@ -97,6 +115,17 @@ export default function App() {
     // REMOVED CONFIRMATION DIALOG as requested
     await supabase.from('appointments').update({ status: newStatus }).eq('id', id);
     fetchData(); // Refresh UI
+  }
+
+  async function updateBloodDonationStatus(id, newStatus, phoneNumber, donationDate) {
+    if (newStatus === 'confirmed') {
+      // We look up the patient by phone_number to update their record
+      await supabase.from('patients')
+        .update({ last_donation_date: donationDate })
+        .eq('phone', phoneNumber);
+    }
+    await supabase.from('blood_donations').update({ status: newStatus }).eq('id', id);
+    fetchData();
   }
 
   // --- 3. LOGIN HANDLER ---
@@ -372,6 +401,45 @@ export default function App() {
           </>
         );
 
+      case 'blood_donations':
+        return (
+          <>
+            <div className="header">
+              <div>
+                <h1 className="page-title">Blood Donations</h1>
+                <p className="page-subtitle">Manage blood donation requests</p>
+              </div>
+              <button className="btn-icon refresh" onClick={fetchData} title="Refresh Data">
+                <Clock size={20} />
+              </button>
+            </div>
+
+            <div className="stats-grid">
+              <div className="stat-card">
+                <div className="stat-icon yellow"><Clock size={24} /></div>
+                <div>
+                  <h3>Pending</h3>
+                  <p>{bloodDonations.filter(a => a.status === 'pending').length}</p>
+                </div>
+              </div>
+              <div className="stat-card green"><div className="stat-icon green"><CheckCircle size={24} /></div>
+                <div><h3>Confirmed</h3><p>{bloodDonations.filter(a => a.status === 'confirmed').length}</p></div>
+              </div>
+              <div className="stat-card blue"><div className="stat-icon blue"><CalendarCheck size={24} /></div>
+                <div><h3>Total Requests</h3><p>{bloodDonations.length}</p></div>
+              </div>
+            </div>
+
+            <div className="section-title" style={{ marginTop: '2rem' }}>Donation Requests</div>
+            <div className="table-container">
+              <BloodDonationsTable
+                data={bloodDonations}
+                updateStatus={updateBloodDonationStatus}
+              />
+            </div>
+          </>
+        );
+
       default: return null;
     }
   };
@@ -405,6 +473,12 @@ export default function App() {
             label="Doctors"
             active={activeTab === 'doctors' || selectedDoctor}
             onClick={() => { setActiveTab('doctors'); setSelectedPatient(null); setSelectedDoctor(null); }}
+          />
+          <SidebarItem
+            icon={<Droplet size={20} />}
+            label="Blood Donations"
+            active={activeTab === 'blood_donations'}
+            onClick={() => { setActiveTab('blood_donations'); setSelectedPatient(null); setSelectedDoctor(null); }}
           />
           <div style={{ marginTop: 'auto' }}>
             <button className="nav-item" onClick={() => setIsAuthenticated(false)}>
@@ -537,5 +611,51 @@ const StatusBadge = ({ status }) => {
     }}>
       {s.label}
     </span>
+  );
+};
+
+const BloodDonationsTable = ({ data, updateStatus }) => {
+  return (
+    <div className="table-responsive">
+      <table cellSpacing="0">
+        <thead>
+          <tr>
+            <th style={{ width: '30%' }}>Patient</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th style={{ textAlign: 'right' }}>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.map(app => (
+            <tr key={app.id}>
+              <td>
+                <div className="cell-primary">{app.donor_name || 'Unknown'}</div>
+                <div className="cell-secondary">{app.phone_number} • {app.blood_group || 'No BG'}</div>
+              </td>
+              <td>
+                <div className="cell-primary">{app.last_donation_date}</div>
+              </td>
+              <td>
+                <StatusBadge status={app.status} />
+              </td>
+              <td style={{ textAlign: 'right' }}>
+                {app.status === 'pending' && (
+                  <div className="actions-row">
+                    <button onClick={(e) => { e.stopPropagation(); updateStatus(app.id, 'confirmed', app.phone_number, app.last_donation_date); }} className="btn-action confirm" title="Confirm">
+                      Confirm
+                    </button>
+                    <button onClick={(e) => { e.stopPropagation(); updateStatus(app.id, 'cancelled', app.phone_number, app.last_donation_date); }} className="btn-action cancel" title="Cancel">
+                      Cancel
+                    </button>
+                  </div>
+                )}
+                {app.status !== 'pending' && <span className="text-secondary">-</span>}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 };

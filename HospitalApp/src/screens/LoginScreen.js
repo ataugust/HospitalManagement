@@ -14,7 +14,9 @@ export default function LoginScreen() {
     age: '',
     gender: '', // We will use a text input for simplicity or a simple picker logic if needed, keeping text for now
     address: '',
-    blood_group: ''
+    blood_group: '',
+    height: '',
+    weight: ''
   });
 
   // --- 1. CHECK PHONE NUMBER (LOGIN) ---
@@ -129,7 +131,9 @@ export default function LoginScreen() {
         age: parseInt(formData.age),
         gender: formData.gender,
         address: formData.address,
-        blood_group: formData.blood_group
+        blood_group: formData.blood_group,
+        height: parseFloat(formData.height) || null,
+        weight: parseFloat(formData.weight) || null
       }]);
 
       if (dbError) throw dbError;
@@ -199,13 +203,40 @@ export default function LoginScreen() {
               </View>
             </View>
 
-            <Text style={styles.label}>Blood Group</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="O+, A-, etc."
-              value={formData.blood_group}
-              onChangeText={t => setFormData({ ...formData, blood_group: t })}
-            />
+            <View style={styles.row}>
+              <View style={{ flex: 1, marginRight: 10 }}>
+                <Text style={styles.label}>Blood Group</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="O+, A-, etc."
+                  value={formData.blood_group}
+                  onChangeText={t => setFormData({ ...formData, blood_group: t })}
+                />
+              </View>
+            </View>
+
+            <View style={styles.row}>
+              <View style={{ flex: 1, marginRight: 10 }}>
+                <Text style={styles.label}>Height (cm)</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="e.g. 175"
+                  keyboardType="number-pad"
+                  value={formData.height}
+                  onChangeText={t => setFormData({ ...formData, height: t })}
+                />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.label}>Weight (kg)</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="e.g. 65"
+                  keyboardType="number-pad"
+                  value={formData.weight}
+                  onChangeText={t => setFormData({ ...formData, weight: t })}
+                />
+              </View>
+            </View>
 
             <Text style={styles.label}>Address</Text>
             <TextInput

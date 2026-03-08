@@ -6,6 +6,7 @@ import HomeScreen from './src/screens/HomeScreen';
 import LoginScreen from './src/screens/LoginScreen';
 import BookingScreen from './src/screens/BookingScreen';
 import MyAppointmentsScreen from './src/screens/MyAppointmentsScreen';
+import BloodDonationScreen from './src/screens/BloodDonationScreen';
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -32,6 +33,7 @@ export default function App() {
             <Stack.Screen name="Home" component={HomeScreen} />
             <Stack.Screen name="Booking" component={BookingScreen} />
             <Stack.Screen name="MyAppointments" component={MyAppointmentsScreen} />
+            <Stack.Screen name="BloodDonation" component={BloodDonationScreen} />
           </>
         ) : (
           // GUEST AREA

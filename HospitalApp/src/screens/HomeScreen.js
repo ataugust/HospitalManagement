@@ -65,7 +65,7 @@ export default function HomeScreen({ navigation }) {
         </TouchableOpacity>
 
         {/* Feature 3: Blood Donation */}
-        <TouchableOpacity style={styles.card} onPress={() => alert("Blood Donation Screen coming soon!")}>
+        <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('BloodDonation')}>
           <View style={[styles.iconBg, { backgroundColor: '#ffebee' }]}>
             <Text style={styles.icon}>🩸</Text>
           </View>
