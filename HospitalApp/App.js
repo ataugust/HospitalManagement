@@ -7,6 +7,9 @@ import LoginScreen from './src/screens/LoginScreen';
 import BookingScreen from './src/screens/BookingScreen';
 import MyAppointmentsScreen from './src/screens/MyAppointmentsScreen';
 import BloodDonationScreen from './src/screens/BloodDonationScreen';
+import MyMedicinesScreen from './src/screens/MyMedicinesScreen';
+import { configurePushNotifications, registerNotificationResponseListener } from './src/services/NotificationService';
+
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -20,6 +23,14 @@ export default function App() {
     supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
     });
+
+    // Set up Local Notifications (Actionable Categories)
+    configurePushNotifications();
+    const sub = registerNotificationResponseListener();
+
+    return () => {
+      if (sub && sub.remove) sub.remove();
+    };
   }, []);
 
   return (
@@ -34,6 +45,7 @@ export default function App() {
             <Stack.Screen name="Booking" component={BookingScreen} />
             <Stack.Screen name="MyAppointments" component={MyAppointmentsScreen} />
             <Stack.Screen name="BloodDonation" component={BloodDonationScreen} />
+            <Stack.Screen name="MyMedicines" component={MyMedicinesScreen} />
           </>
         ) : (
           // GUEST AREA

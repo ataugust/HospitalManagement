@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { supabase } from '../../lib/supabase';
 
 export default function HomeScreen({ navigation }) {
@@ -56,7 +56,7 @@ export default function HomeScreen({ navigation }) {
         </TouchableOpacity>
 
         {/* Feature 2: Medicines */}
-        <TouchableOpacity style={styles.card} onPress={() => alert("Medicine Screen coming soon!")}>
+        <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('MyMedicines')}>
           <View style={[styles.iconBg, { backgroundColor: '#e8f5e9' }]}>
             <Text style={styles.icon}>💊</Text>
           </View>
