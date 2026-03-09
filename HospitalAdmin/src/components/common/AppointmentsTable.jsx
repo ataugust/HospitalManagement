@@ -27,7 +27,7 @@ export const AppointmentsTable = ({ data, updateStatus, showDoctor, showPatient,
               )}
               {showDoctor && (
                 <td>
-                  <div className="cell-primary">Dr. {app.doctors?.name || 'Unknown'}</div>
+                  <div className="cell-primary"> {app.doctors?.name || 'Unknown'}</div>
                   <div className="cell-secondary">{app.doctors?.department}</div>
                 </td>
               )}
